@@ -7,7 +7,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "../../providers/ThemeProvider";
 import { useSidebar } from "../../providers/sidebar-provider/sidebar-provider";
-
+import { WorkspaceHeader } from "./WorkspaceHeader";
 
 
 import { Controls } from "./Controls";
@@ -152,8 +152,14 @@ export const Menu: React.FC = () => {
         relative flex-shrink-0
       `}
     >
+      
+
+
       <div className="relative">
-     
+          <WorkspaceHeader
+          collapsed={collapsed}
+    
+        />
       
       </div>
 
