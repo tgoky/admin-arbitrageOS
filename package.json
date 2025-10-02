@@ -1,0 +1,52 @@
+{
+  "name": "admin-arbitrageos",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "cross-env NODE_OPTIONS=--max_old_space_size=4096 refine dev",
+    "build": "refine build",
+    "start": "refine start",
+    "lint": "next lint",
+    "refine": "refine"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^6.1.0",
+    "@heroicons/react": "^2.2.0",
+    "@refinedev/cli": "^2.16.48",
+    "@refinedev/core": "^5.0.0",
+    "@refinedev/devtools": "^2.0.1",
+    "@refinedev/kbar": "^2.0.0",
+    "@refinedev/nextjs-router": "^7.0.0",
+    "@refinedev/react-hook-form": "^5.0.0",
+    "@refinedev/react-table": "^6.0.0",
+    "@refinedev/supabase": "^6.0.0",
+    "@supabase/ssr": "^0.3.0",
+    "@tanstack/react-query": "^5.90.2",
+    "@tanstack/react-table": "^8.2.6",
+    "antd": "^5.27.4",
+    "js-cookie": "^3.0.5",
+    "lucide-react": "^0.544.0",
+    "next": "^15.2.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/js-cookie": "^3.0.6",
+    "@types/node": "^20",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^8",
+    "eslint-config-next": "^15.0.3",
+    "postcss": "^8",
+    "tailwindcss": "^4",
+    "typescript": "^5.8.3"
+  },
+  "refine": {
+    "projectId": "Fv0SqB-99iJus-0YilbS"
+  }
+}
