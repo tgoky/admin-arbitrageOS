@@ -7,7 +7,7 @@ import React, { Suspense } from "react";
 import { ThemeProvider } from "../providers/ThemeProvider";
 import { SidebarProvider } from "../providers/sidebar-provider/sidebar-provider";
 
-import { authProviderClient } from "@providers/auth-provider/auth-provider.client";
+import { adminAuthProviderClient } from "@providers/auth-provider/auth-provider.client";
 import { dataProvider } from "@providers/data-provider";
 import "@styles/global.css";
 
@@ -35,15 +35,15 @@ export default async function RootLayout({
                      <SidebarProvider>
               <Refine
                 routerProvider={routerProvider}
-                authProvider={authProviderClient}
+                authProvider={adminAuthProviderClient}
                 dataProvider={dataProvider}
                 resources={[
                   {
-                    name: "blog_posts",
-                    list: "/blog-posts",
-                    create: "/blog-posts/create",
-                    edit: "/blog-posts/edit/:id",
-                    show: "/blog-posts/show/:id",
+                    name: "admin",
+                    list: "/admin",
+                    create: "/admin/create",
+                    edit: "/admin/edit/:id",
+                    show: "/admin/show/:id",
                     meta: {
                       canDelete: true,
                     },
@@ -62,7 +62,7 @@ export default async function RootLayout({
                 options={{
                   syncWithLocation: true,
                   warnWhenUnsavedChanges: true,
-                  projectId: "Fv0SqB-99iJus-0YilbS",
+              projectId: "tendpwtatawlyxhmmdae",
                 }}
               >
                 {children}

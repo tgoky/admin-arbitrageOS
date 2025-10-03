@@ -1,143 +1,145 @@
+// admin-app/src/providers/auth-provider/admin-auth-provider.client.ts
 "use client";
 
 import type { AuthProvider } from "@refinedev/core";
-import { supabaseBrowserClient } from "@utils/supabase/client";
+import { supabaseBrowserClient as supabase } from "../../utils/supabase/client";
 
-export const authProviderClient: AuthProvider = {
-  login: async ({ email, password }) => {
-    const { data, error } = await supabaseBrowserClient.auth.signInWithPassword(
-      {
-        email,
-        password,
-      }
-    );
-
-    if (error) {
-      return {
-        success: false,
-        error,
-      };
-    }
-
-    if (data?.session) {
-      await supabaseBrowserClient.auth.setSession(data.session);
-
-      return {
-        success: true,
-        redirectTo: "/",
-      };
-    }
-
-    // for third-party login
-    return {
-      success: false,
-      error: {
-        name: "LoginError",
-        message: "Invalid username or password",
-      },
-    };
-  },
-  logout: async () => {
-    const { error } = await supabaseBrowserClient.auth.signOut();
-
-    if (error) {
-      return {
-        success: false,
-        error,
-      };
-    }
-
-    return {
-      success: true,
-      redirectTo: "/login",
-    };
-  },
-  register: async ({ email, password }) => {
+export const adminAuthProviderClient: AuthProvider = {
+  login: async ({ email }) => {
     try {
-      const { data, error } = await supabaseBrowserClient.auth.signUp({
-        email,
-        password,
+      const trimmedEmail = email.trim().toLowerCase();
+
+      // Send magic link for admin login
+      const { error } = await supabase.auth.signInWithOtp({
+        email: trimmedEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/admin`,
+          shouldCreateUser: false, // Don't auto-create users
+        },
       });
 
       if (error) {
         return {
           success: false,
-          error,
+          error: {
+            name: "LoginError",
+            message: error.message || "Failed to send magic link",
+          },
         };
       }
 
-      if (data) {
-        return {
-          success: true,
-          redirectTo: "/",
-        };
-      }
+      return {
+        success: true,
+        successNotification: {
+          message: "Check your email!",
+          description: "We sent you a magic link to login as admin.",
+        },
+      };
     } catch (error: any) {
       return {
         success: false,
-        error,
+        error: {
+          name: "LoginError",
+          message: error?.message || "Failed to login",
+        },
       };
     }
-
-    return {
-      success: false,
-      error: {
-        message: "Register failed",
-        name: "Invalid email or password",
-      },
-    };
   },
+
+  logout: async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        return { 
+          success: false, 
+          error: {
+            name: "LogoutError",
+            message: error.message,
+          },
+        };
+      }
+      
+      return { 
+        success: true, 
+        redirectTo: "/login" 
+      };
+    } catch (error: any) {
+      return { 
+        success: false, 
+        error: {
+          name: "LogoutError",
+          message: error.message || "Logout failed",
+        },
+      };
+    }
+  },
+
   check: async () => {
-    const { data, error } = await supabaseBrowserClient.auth.getUser();
-    const { user } = data;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        return { 
+          authenticated: false, 
+          logout: true, 
+          redirectTo: "/login" 
+        };
+      }
 
-    if (error) {
-      return {
-        authenticated: false,
-        redirectTo: "/login",
-        logout: true,
+      // Check admin role via API (Prisma)
+      const response = await fetch('/api/admin/verify');
+      const { isAdmin } = await response.json();
+
+      if (!isAdmin) {
+        return { 
+          authenticated: false, 
+          logout: true, 
+          redirectTo: "/login",
+          error: {
+            message: "You don't have admin access",
+            name: "Unauthorized"
+          }
+        };
+      }
+      
+      return { authenticated: true };
+    } catch (error) {
+      return { 
+        authenticated: false, 
+        logout: true, 
+        redirectTo: "/login" 
       };
     }
-
-    if (user) {
-      return {
-        authenticated: true,
-      };
-    }
-
-    return {
-      authenticated: false,
-      redirectTo: "/login",
-    };
   },
-  getPermissions: async () => {
-    const user = await supabaseBrowserClient.auth.getUser();
 
-    if (user) {
-      return user.data.user?.role;
-    }
-
-    return null;
-  },
   getIdentity: async () => {
-    const { data } = await supabaseBrowserClient.auth.getUser();
-
-    if (data?.user) {
-      return {
-        ...data.user,
-        name: data.user.email,
-      };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Admin',
+          avatar: user.user_metadata?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      return null;
     }
-
-    return null;
   },
+
   onError: async (error) => {
-    if (error?.code === "PGRST301" || error?.code === 401) {
-      return {
-        logout: true,
+    if (error.status === 401) {
+      return { 
+        logout: true, 
+        redirectTo: "/login" 
       };
     }
-
+    
     return { error };
   },
 };

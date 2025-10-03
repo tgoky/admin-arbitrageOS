@@ -1,0 +1,219 @@
+// schema.prisma - COMPLETE WITH ADMIN, INVITES, CREDITS SYSTEM AND USER MODEL + RELATIONS
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["public"]
+}
+
+// ------------------ USER MODEL ------------------
+model User {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email          String    @unique
+  name           String?
+  avatar         String?
+  status         String?   @default("invited") @db.VarChar(50) // 'invited', 'active', 'suspended'
+  last_login     DateTime? @map("last_login") @db.Timestamptz(6)
+  invite_sent_at DateTime? @map("invite_sent_at") @db.Timestamptz(6)
+  created_at     DateTime  @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamptz(6)
+  updated_at     DateTime  @default(dbgenerated("timezone('utc'::text, now())")) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  workspaces         Workspace[]
+  deliverables       Deliverable[]
+  userFavorites      UserFavorite[]
+  aiToolFavorites    AIToolFavorite[]
+  userCredits        UserCredit?
+  creditTransactions CreditTransaction[]
+  notifications      Notification[]
+
+  @@index([email], map: "idx_users_email")
+  @@map("users")
+  @@schema("public")
+}
+
+// ------------------ ADMIN MODELS ------------------
+model AdminProfile {
+  id         String   @id @db.Uuid
+  role       String   @default("admin") @db.VarChar(50)
+  created_at DateTime @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamptz(6)
+  updated_at DateTime @default(dbgenerated("timezone('utc'::text, now())")) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("admin_profiles")
+  @@schema("public")
+}
+
+model UserInvite {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email       String    @unique @db.VarChar(255)
+  status      String    @default("sent") @db.VarChar(50) // 'sent', 'accepted', 'expired'
+  invited_by  String    @db.VarChar(255)
+  sent_at     DateTime  @default(dbgenerated("timezone('utc'::text, now())")) @map("sent_at") @db.Timestamptz(6)
+  accepted_at DateTime? @map("accepted_at") @db.Timestamptz(6)
+  expires_at  DateTime  @map("expires_at") @db.Timestamptz(6)
+  created_at  DateTime  @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamptz(6)
+  updated_at  DateTime  @default(dbgenerated("timezone('utc'::text, now())")) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([email], map: "idx_user_invites_email")
+  @@index([status], map: "idx_user_invites_status")
+  @@map("user_invites")
+  @@schema("public")
+}
+
+// ------------------ WORKSPACE ------------------
+model Workspace {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String    @map("user_id") @db.Uuid
+  name        String    @db.VarChar(255)
+  slug        String    @db.VarChar(255)
+  description String?
+  color       String?   @default("bg-blue-700") @db.VarChar(50)
+  created_at  DateTime? @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamptz(6)
+  updated_at  DateTime? @default(dbgenerated("timezone('utc'::text, now())")) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  user               User                @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  deliverables       Deliverable[]
+  creditTransactions CreditTransaction[]
+  notifications      Notification[]
+  
+  @@unique([user_id, slug])
+  @@index([slug], map: "idx_workspaces_slug")
+  @@index([user_id], map: "idx_workspaces_user_id")
+  @@map("workspaces")
+  @@schema("public")
+}
+
+// ------------------ DELIVERABLE ------------------
+model Deliverable {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title        String   @db.VarChar(255)
+  content      String   @db.Text
+  type         String   @db.VarChar(100)
+  user_id      String   @db.Uuid
+  workspace_id String   @db.Uuid
+  client_id    String?  @db.Uuid
+  metadata     Json?
+  tags         String[]
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  
+  @@index([user_id], map: "idx_deliverables_user_id")
+  @@index([workspace_id], map: "idx_deliverables_workspace_id")
+  @@index([workspace_id, user_id, type], map: "idx_deliverables_workspace_user_type")
+  @@index([type], map: "idx_deliverables_type")
+  @@map("deliverables")
+  @@schema("public")
+}
+
+// ------------------ USER FAVORITE ------------------
+model UserFavorite {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  prompt_id  Int
+  created_at DateTime @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
+  
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+    
+  @@unique([user_id, prompt_id])
+  @@index([user_id], map: "idx_user_favorites_user_id")
+  @@map("user_favorites")
+  @@schema("public")
+}
+
+// ------------------ AI TOOL FAVORITE ------------------
+model AIToolFavorite {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  tool_id    String
+  created_at DateTime @default(dbgenerated("timezone('utc'::text, now())")) @db.Timestamptz(6)
+  
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+       
+  @@unique([user_id, tool_id])
+  @@index([user_id], map: "idx_aitool_favorites_user_id")
+  @@map("aitool_favorites")
+  @@schema("public")
+}
+
+// ------------------ USER CREDITS ------------------
+model UserCredit {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String   @unique @db.Uuid
+  credits           Int      @default(0)
+  free_leads_used   Int      @default(0) @map("free_leads_used")
+  total_purchased   Int      @default(0) @map("total_purchased")
+  created_at        DateTime @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamptz(6)
+  updated_at        DateTime @default(dbgenerated("timezone('utc'::text, now())")) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id], map: "idx_user_credits_user_id")
+  @@map("user_credits")
+  @@schema("public")
+}
+
+// ------------------ CREDIT TRANSACTION ------------------
+model CreditTransaction {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id          String    @db.Uuid
+  workspace_id     String?   @db.Uuid
+  amount           Int
+  transaction_type String    @map("transaction_type") @db.VarChar(50) // 'purchase', 'usage', 'refund', 'bonus', 'free_usage'
+  description      String?
+  reference_id     String?   @map("reference_id")
+  metadata         Json?
+  created_at       DateTime  @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamptz(6)
+
+  // Relations
+  user      User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workspace Workspace? @relation(fields: [workspace_id], references: [id], onDelete: SetNull)
+  
+  @@index([user_id], map: "idx_credit_transactions_user_id")
+  @@index([user_id, transaction_type], map: "idx_credit_transactions_user_type")
+  @@index([transaction_type], map: "idx_credit_transactions_type")
+  @@index([created_at], map: "idx_credit_transactions_created_at")
+  @@map("credit_transactions")
+  @@schema("public")
+}
+
+// ------------------ NOTIFICATION MODEL ------------------
+model Notification {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id      String    @db.Uuid
+  workspace_id String    @db.Uuid
+  type         String    @db.VarChar(50)  // 'pricing_calculation', 'sales_call', etc.
+  title        String    @db.VarChar(255)
+  message      String    @db.Text
+  status       String    @default("unread") @db.VarChar(20) // 'unread', 'read', 'archived'
+  item_id      String    @db.Uuid  // ID of the generated item (deliverable, calculation, etc.)
+  route        String    @db.Text  // The URL route to navigate to
+  metadata     Json?
+  read_at      DateTime? @map("read_at") @db.Timestamptz(6)
+  created_at   DateTime  @default(dbgenerated("timezone('utc'::text, now())")) @map("created_at") @db.Timestamptz(6)
+  updated_at   DateTime  @default(dbgenerated("timezone('utc'::text, now())")) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id], map: "idx_notifications_user_id")
+  @@index([workspace_id], map: "idx_notifications_workspace_id")
+  @@index([user_id, workspace_id, status], map: "idx_notifications_user_workspace_status")
+  @@index([status], map: "idx_notifications_status")
+  @@index([created_at], map: "idx_notifications_created_at")
+  @@map("notifications")
+  @@schema("public")
+}

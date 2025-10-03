@@ -1,8 +1,10 @@
-import { CookieOptions, createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { SUPABASE_KEY, SUPABASE_URL } from "./constants";
+// admin-app/src/utils/supabase/server.ts
+import { createServerClient } from '@supabase/ssr';
+import type { CookieOptions } from '@supabase/ssr';
+import { SUPABASE_URL, SUPABASE_KEY } from './constants';
+import { cookies } from 'next/headers';
 
-export const createSupabaseServerClient = async () => {
+export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
 
   return createServerClient(SUPABASE_URL, SUPABASE_KEY, {
@@ -14,20 +16,19 @@ export const createSupabaseServerClient = async () => {
         try {
           cookieStore.set({ name, value, ...options });
         } catch (error) {
-          // The `set` method was called from a Server Component.
-          // This can be ignored if you have middleware refreshing
-          // user sessions.
+          console.error('Error setting cookie:', error);
         }
       },
       remove(name: string, options: CookieOptions) {
         try {
-          cookieStore.set({ name, value: "", ...options });
+          cookieStore.set({ name, value: '', ...options });
         } catch (error) {
-          // The `delete` method was called from a Server Component.
-          // This can be ignored if you have middleware refreshing
-          // user sessions.
+          console.error('Error removing cookie:', error);
         }
       },
     },
   });
-};
+}
+
+// Add this alias for compatibility
+export const createClient = createSupabaseServerClient;
