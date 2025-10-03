@@ -453,6 +453,7 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
             pagination={{ pageSize: 10 }}
             scroll={{ x: 800 }}
             rowKey="id"
+               className="no-vertical-borders"
           >
             <Column 
               title="User" 
@@ -539,6 +540,7 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
             dataSource={invites}
             pagination={{ pageSize: 5 }}
             rowKey="id"
+               className="no-vertical-borders" 
           >
             <Column title="Email" dataIndex="email" key="email" />
             <Column 

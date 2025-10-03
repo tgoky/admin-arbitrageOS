@@ -40,14 +40,14 @@ interface NavigationMenuProps {
 const menuGroups: MenuGroupConfig[] = [
   {
     id: "content",
-    label: "Users",
+    label: "Platform Users",
     icon: <ShieldCheckIcon className="h-4 w-4" />,
     subGroups: [
       {
         id: "compliance",
         label: "Users",
         icon: <ShieldCheckIcon className="h-4 w-4" />,
-        items: [ "", ],
+        items: [ "admin", ],
         //commented out client profile , hiring portal
       },
       {
@@ -68,7 +68,7 @@ const menuGroups: MenuGroupConfig[] = [
   },
   {
     id: "overview",
-    label: "Invites",
+    label: "View Invites",
     icon: <HomeIcon className="h-4 w-4" />,
     items: [
     //    "Top_50_Niches",
@@ -78,8 +78,8 @@ const menuGroups: MenuGroupConfig[] = [
     //     "Ad_Writer",
     //   "Cold_Email_Writer",
     // "Sales_Call_Analyzer",
-    //   "Growth_Plan_Creator",
-      "categories",
+
+      "invites",
     ],
   },
   {

@@ -84,6 +84,36 @@
     @apply flex-shrink-0 p-2 pr-4 border-r border-gray-300;
   }
 
+  /* Remove ALL table borders - High specificity */
+.ant-table .ant-table-container {
+  border-left: none !important;
+  border-right: none !important;
+  border: none !important;
+}
+
+.ant-table .ant-table-thead > tr > th,
+.ant-table .ant-table-tbody > tr > td {
+  border-right: none !important;
+  border-left: none !important;
+}
+
+.ant-table .ant-table-thead > tr > th {
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+.ant-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+.ant-table .ant-table-tbody > tr:last-child > td {
+  border-bottom: none !important;
+}
+
+/* Remove the outer table border */
+.ant-table {
+  border: none !important;
+}
+
   .menu a {
     @apply text-black;
   }
