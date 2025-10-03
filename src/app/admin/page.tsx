@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTheme } from '../../providers/ThemeProvider';
 import { adminInviteService, type UserWithStats } from '@/services/admin-invite.service';
 import { 
   Button, 
@@ -64,6 +65,7 @@ interface DashboardMetrics {
 
 const AdminDashboard = () => {
   const router = useRouter();
+  const { theme } = useTheme();
   
   // State variables
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -263,43 +265,83 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gray-900">
-        <Card className="w-80 text-center shadow-lg" bodyStyle={{ padding: '32px' }}>
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <TeamOutlined className="text-[#5CC49D] text-xl" />
-            <Text strong>Loading Admin Panel</Text>
+      <div className="min-h-screen w-full flex flex-col items-center pt-20" style={{ 
+        backgroundColor: theme === 'dark' ? '#000000' : '#f9fafb' 
+      }}>
+        <div className="flex flex-col items-center">
+          <div className="mb-4">
+            <img
+              src={theme === 'dark' ? "/aoswhite.png" : "/aosblack.png"}
+              alt="ArbitrageOS Logo"
+              className="h-64"
+              style={{ 
+                width: 'auto',
+                objectFit: 'contain'
+              }}
+            />
           </div>
           
-          <div>
-            <Text className="text-sm font-medium">Initializing Admin System</Text>
-            <div className="flex justify-between items-center mt-2">
-              <Progress 
-                percent={progress} 
-                strokeColor="#5CC49D"
-                size="small"
-                showInfo={false}
-                className="flex-1 mr-3"
-              />
-              <Text className="text-xs font-mono font-medium" style={{ color: '#5CC49D' }}>
-                {progress}%
-              </Text>
+          <Card 
+            className="w-80 text-center shadow-lg -mt-2"
+            bodyStyle={{ padding: '32px' }}
+          >
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <TeamOutlined className="text-[#5CC49D] text-xl" />
+              <Text strong>Loading Admin Panel</Text>
             </div>
-          </div>
-        </Card>
+            
+            <div className="space-y-4">
+              <div>
+                <Text className="text-sm font-medium">Initializing Admin System</Text>
+                <div className="flex justify-between items-center mt-2">
+                  <Progress 
+                    percent={progress} 
+                    strokeColor="#5CC49D"
+                    trailColor={theme === 'dark' ? '#374151' : '#e5e7eb'}
+                    size="small"
+                    showInfo={false}
+                    className="flex-1 mr-3"
+                  />
+                  <Text className="text-xs font-mono font-medium" style={{ color: '#5CC49D' }}>
+                    {progress}%
+                  </Text>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen w-full bg-gray-900">
+    <div className="min-h-screen w-full" style={{ 
+      backgroundColor: theme === 'dark' ? '#000000' : '#f9fafb' 
+    }}>
       {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
-        <div className="flex items-center justify-between">
+      <header className={`${theme === 'dark' ? 'bg-[#181919] border-gray-700' : 'bg-white border-gray-200'} border-b px-6 py-2`}>
+        <div className="flex items-center justify-between h-12">
+          {/* Logo */}
           <div className="flex items-center gap-3">
-            <TeamOutlined className="text-[#5CC49D] text-xl" />
-            <Text strong className="text-white text-lg">Admin Panel</Text>
+            <img
+              src={theme === 'dark' ? "/aoswhite.png" : "/aosblack.png"}
+              alt="ArbitrageOS Logo"
+              style={{ 
+                height: '140px',
+                width: 'auto',
+                objectFit: 'contain',
+                marginRight: '16px'
+              }}
+            />
+            <div className="flex items-center gap-2">
+              <TeamOutlined className="text-[#5CC49D]" />
+              <Text strong className={theme === 'dark' ? 'text-white' : 'text-black'}>
+                Admin Panel
+              </Text>
+            </div>
           </div>
 
+          {/* Search Bar */}
           <div className="flex-1 max-w-md mx-8">
             <Search
               placeholder="Search users..."
@@ -310,8 +352,14 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
             />
           </div>
 
+          {/* Admin Menu */}
           <Space>
-            <Button icon={<ExportOutlined />}>Export</Button>
+            <Button 
+              icon={<ExportOutlined />}
+              onClick={() => message.info('Export feature coming soon')}
+            >
+              Export
+            </Button>
             <Button 
               type="primary" 
               icon={<SendOutlined />}
@@ -326,15 +374,20 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
 
       {/* Main Content */}
       <main className="w-full px-6 py-6">
+        {/* Welcome Section */}
         <div className="mb-6">
-          <Title level={3} className="mb-1 text-white">User Management Dashboard</Title>
-          <Text className="text-gray-400">Monitor and manage platform access</Text>
+          <Title level={3} className="mb-1" style={{ color: theme === 'dark' ? '#fff' : '#000' }}>
+            User Management Dashboard
+          </Title>
+          <Text type="secondary" className="text-sm">
+            Monitor and manage platform access and user activity
+          </Text>
         </div>
 
         {/* Stats Cards */}
         <Row gutter={[12, 12]} className="mb-6">
-          <Col xs={24} sm={12} md={6}>
-            <Card size="small" className="text-center">
+          <Col xs={24} sm={8} md={6}>
+            <Card size="small" className="text-center h-full">
               <Statistic
                 title="Total Users"
                 value={metrics.totalUsers}
@@ -344,8 +397,8 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
             </Card>
           </Col>
           
-          <Col xs={24} sm={12} md={6}>
-            <Card size="small" className="text-center">
+          <Col xs={24} sm={8} md={6}>
+            <Card size="small" className="text-center h-full">
               <Statistic
                 title="Active Users"
                 value={metrics.activeUsers}
@@ -355,8 +408,8 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
             </Card>
           </Col>
           
-          <Col xs={24} sm={12} md={6}>
-            <Card size="small" className="text-center">
+          <Col xs={24} sm={8} md={6}>
+            <Card size="small" className="text-center h-full">
               <Statistic
                 title="Pending Invites"
                 value={metrics.pendingInvites}
@@ -366,10 +419,10 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
             </Card>
           </Col>
           
-          <Col xs={24} sm={12} md={6}>
-            <Card size="small" className="text-center">
+          <Col xs={24} sm={8} md={6}>
+            <Card size="small" className="text-center h-full">
               <Statistic
-                title="Tools Used"
+                title="Generations"
                 value={metrics.totalToolsUsed}
                 prefix={<BarChartOutlined />}
                 valueStyle={{ color: '#722ed1' }}
@@ -387,7 +440,12 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
               <Badge count={filteredUsers.length} showZero />
             </div>
           }
-          extra={<Space><Button icon={<FilterOutlined />}>Filter</Button></Space>}
+          extra={
+            <Space>
+              <Button icon={<FilterOutlined />}>Filter</Button>
+              <Button icon={<ExportOutlined />}>Export</Button>
+            </Space>
+          }
           className="mb-6"
         >
           <Table 
@@ -409,20 +467,44 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
                 </Space>
               )}
             />
-            <Column title="Status" key="status" render={(user: User) => getStatusTag(user.status)} />
+            <Column 
+              title="Status" 
+              key="status"
+              render={(user: User) => getStatusTag(user.status)}
+            />
             <Column 
               title="Last Login" 
               key="lastLogin"
-              render={(user: User) => user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
+              render={(user: User) => 
+                user.last_login 
+                  ? new Date(user.last_login).toLocaleDateString()
+                  : 'Never'
+              }
             />
-            <Column title="Workspaces" key="workspaceCount" render={(user: User) => <Tag color="blue">{user.workspaceCount}</Tag>} />
-            <Column title="Tools Used" key="toolsUsed" dataIndex="toolsUsed" />
+            <Column 
+              title="Workspaces" 
+              key="workspaceCount"
+              render={(user: User) => (
+                <Tag color="blue">{user.workspaceCount}</Tag>
+              )}
+            />
+            <Column 
+              title="Tools Used" 
+              key="toolsUsed"
+              render={(user: User) => user.toolsUsed}
+            />
             <Column 
               title="Actions" 
               key="actions"
               render={(user: User) => (
                 <Space>
-                  <Button size="small" icon={<EyeOutlined />} onClick={() => handleUserAction(user, 'view')}>View</Button>
+                  <Button 
+                    size="small" 
+                    icon={<EyeOutlined />}
+                    onClick={() => handleUserAction(user, 'view')}
+                  >
+                    View
+                  </Button>
                   <Button 
                     size="small"
                     icon={<MailOutlined />}
@@ -445,27 +527,73 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
         </Card>
 
         {/* Recent Invites */}
-        <Card title={<div className="flex items-center gap-2"><MailOutlined /><span>Recent Invites</span></div>}>
-          <Table dataSource={invites} pagination={{ pageSize: 5 }} rowKey="id">
+        <Card 
+          title={
+            <div className="flex items-center gap-2">
+              <MailOutlined />
+              <span>Recent Invites</span>
+            </div>
+          }
+        >
+          <Table 
+            dataSource={invites}
+            pagination={{ pageSize: 5 }}
+            rowKey="id"
+          >
             <Column title="Email" dataIndex="email" key="email" />
-            <Column title="Status" key="status" render={(invite: Invite) => getInviteStatusTag(invite.status)} />
-            <Column title="Sent At" key="sentAt" render={(invite: Invite) => new Date(invite.sent_at).toLocaleString()} />
+            <Column 
+              title="Status" 
+              key="status"
+              render={(invite: Invite) => getInviteStatusTag(invite.status)}
+            />
+            <Column 
+              title="Sent At" 
+              key="sentAt"
+              render={(invite: Invite) => new Date(invite.sent_at).toLocaleString()}
+            />
             <Column 
               title="Accepted At" 
               key="acceptedAt"
-              render={(invite: Invite) => invite.accepted_at ? new Date(invite.accepted_at).toLocaleString() : '-'}
+              render={(invite: Invite) => 
+                invite.accepted_at 
+                  ? new Date(invite.accepted_at).toLocaleString()
+                  : '-'
+              }
             />
           </Table>
         </Card>
       </main>
 
-      {/* Invite Modal */}
+      {/* Footer */}
+      <footer className={`${theme === 'dark' ? 'bg-black border-gray-700' : 'bg-white border-gray-200'} border-t mt-auto px-6 py-2`}>
+        <div className="flex items-center justify-center">
+          <Text type="secondary" className="text-xs">
+            <span className="" style={{ color: '#5CC49D' }}>arbitrage</span>OS Admin Panel • 
+            {' '}<span style={{ color: '#5CC49D' }}>Secure Access Management</span>
+            {' '}© 2025
+          </Text>
+        </div>
+      </footer>
+
+      {/* Invite User Modal */}
       <Modal
-        title="Invite User to Platform"
+        title={
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-[#5CC49D] rounded-lg flex items-center justify-center">
+              <MailOutlined className="text-white text-sm" />
+            </div>
+            <div>
+              <Title level={4} className="mb-0">Invite User to Platform</Title>
+              <Text type="secondary" className="text-sm">Send an invitation email</Text>
+            </div>
+          </div>
+        }
         open={showInviteModal}
         onCancel={() => setShowInviteModal(false)}
         footer={[
-          <Button key="cancel" onClick={() => setShowInviteModal(false)} disabled={sendingInvite}>Cancel</Button>,
+          <Button key="cancel" onClick={() => setShowInviteModal(false)} disabled={sendingInvite}>
+            Cancel
+          </Button>,
           <Button
             key="send"
             type="primary"
@@ -479,14 +607,22 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
         ]}
       >
         <div className="space-y-4 pt-4">
-          <Input
-            value={inviteEmail}
-            onChange={(e) => setInviteEmail(e.target.value)}
-            placeholder="user@company.com"
-            prefix={<MailOutlined />}
-          />
-          <div className="p-4 bg-blue-50 rounded-lg">
-            <Text className="text-sm">The user will receive an email to join the main platform.</Text>
+          <div>
+            <Text strong className="block mb-2">Email Address</Text>
+            <Input
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              placeholder="user@company.com"
+              autoFocus
+              prefix={<MailOutlined />}
+            />
+          </div>
+          
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <Text type="secondary" className="text-sm">
+              The user will receive an email invitation to join arbitrageOS. 
+              They will be able to create their account and access the platform features.
+            </Text>
           </div>
         </div>
       </Modal>

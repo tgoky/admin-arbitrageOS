@@ -11,7 +11,7 @@ export const UserSection = ({ collapsed, handleLogout }: UserSectionProps) => {
   const { theme } = useTheme();
 
   return (
-    <div className={`p-4 ${theme === "dark" ? "bg-gray-900" : "bg-white"} border-t ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
+    <div className={`p-4 ${theme === "dark" ? "bg-[#181919]" : "bg-white"} border-t ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
       {/* Logout Button - Clean and centered */}
       <button
         onClick={handleLogout}

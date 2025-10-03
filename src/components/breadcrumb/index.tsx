@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChevronRight, Home } from "lucide-react";
 import { useTheme } from "../../providers/ThemeProvider";
 
-// Fixed version with full background coverage
+// Fixed version matching AdminDashboard styling
 export const Breadcrumb = () => {
   const { breadcrumbs } = useBreadcrumb();
   const { theme } = useTheme();
@@ -17,11 +17,9 @@ export const Breadcrumb = () => {
   return (
     <div className={`w-full ${
       theme === "dark" 
-        ? "bg-gradient-to-r from-gray-900 to-gray-800" 
-        : "bg-gradient-to-r from-blue-50 to-purple-50"
-    } border-b ${
-      theme === "dark" ? "border-gray-700" : "border-gray-200"
-    }`}>
+        ? "bg-[#181919] border-gray-700" 
+        : "bg-white border-gray-200"
+    } border-b`}>
       <div className="w-full px-6 py-4">
         <div className="flex items-center space-x-1 text-sm">
           {/* Home */}
@@ -30,7 +28,7 @@ export const Breadcrumb = () => {
             className={`flex items-center gap-1 px-2 py-1 rounded-md transition-colors ${
               theme === "dark"
                 ? "text-gray-400 hover:text-white hover:bg-gray-700"
-                : "text-gray-600 hover:text-gray-900 hover:bg-white"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
             }`}
           >
             <Home size={14} />
@@ -57,7 +55,7 @@ export const Breadcrumb = () => {
                     className={`px-2 py-1 rounded-md transition-colors ${
                       theme === "dark"
                         ? "text-gray-400 hover:text-white hover:bg-gray-700"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-white"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                     }`}
                   >
                     {breadcrumb.label}
@@ -67,7 +65,7 @@ export const Breadcrumb = () => {
                     className={`px-2 py-1 font-semibold ${
                       theme === "dark" 
                         ? "text-white bg-gray-700 rounded-md" 
-                        : "text-gray-900 bg-white rounded-md shadow-sm"
+                        : "text-gray-900 bg-gray-100 rounded-md"
                     }`}
                   >
                     {breadcrumb.label}
@@ -82,7 +80,7 @@ export const Breadcrumb = () => {
   );
 };
 
-// Fixed minimal version
+// Fixed minimal version matching AdminDashboard
 export const MinimalBreadcrumb = () => {
   const { breadcrumbs } = useBreadcrumb();
   const { theme } = useTheme();
@@ -93,8 +91,8 @@ export const MinimalBreadcrumb = () => {
 
   return (
     <div className={`w-full ${
-      theme === "dark" ? "bg-gray-900" : "bg-gray-50"
-    }`}>
+      theme === "dark" ? "bg-[#181919]" : "bg-white"
+    } border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
       <div className="w-full px-6 py-3">
         <div className="flex items-center space-x-1 text-sm">
           {breadcrumbs.map((breadcrumb, index) => {
