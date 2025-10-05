@@ -364,7 +364,7 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
               type="primary" 
               icon={<SendOutlined />}
               onClick={() => setShowInviteModal(true)}
-              style={{ backgroundColor: '#5CC49D', borderColor: '#5CC49D' }}
+              style={{ backgroundColor: '#5CC49D', borderColor: '#5CC49D' , color: 'black' }}
             >
               Invite User
             </Button>
@@ -422,7 +422,7 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
           <Col xs={24} sm={8} md={6}>
             <Card size="small" className="text-center h-full">
               <Statistic
-                title="Generations"
+                title="Total Deliverables"
                 value={metrics.totalToolsUsed}
                 prefix={<BarChartOutlined />}
                 valueStyle={{ color: '#722ed1' }}
@@ -490,7 +490,7 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
               )}
             />
             <Column 
-              title="Tools Used" 
+              title="Deliverables per User" 
               key="toolsUsed"
               render={(user: User) => user.toolsUsed}
             />
@@ -602,7 +602,7 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
             loading={sendingInvite}
             disabled={!inviteEmail.trim()}
             onClick={handleSendInvite}
-            style={{ backgroundColor: '#5CC49D', borderColor: '#5CC49D' }}
+        
           >
             Send Invitation
           </Button>
@@ -620,7 +620,7 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
             />
           </div>
           
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="p-4  rounded-lg border border-blue-200">
             <Text type="secondary" className="text-sm">
               The user will receive an email invitation to join arbitrageOS. 
               They will be able to create their account and access the platform features.

@@ -111,7 +111,7 @@ export const WorkspaceHeader = ({ collapsed }: WorkspaceHeaderProps) => {
               <div className={`text-[10px] ${
                 theme === "dark" ? "text-gray-500" : "text-gray-400"
               }`}>
-                Generations
+                Deliverables
               </div>
             </div>
             <div>

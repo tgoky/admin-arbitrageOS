@@ -191,7 +191,7 @@ const InvitesPage = () => {
               type="primary" 
               icon={<SendOutlined />}
               onClick={() => setShowInviteModal(true)}
-              style={{ backgroundColor: '#5CC49D', borderColor: '#5CC49D' }}
+             
               size="large"
             >
               Send Invitation
@@ -390,7 +390,7 @@ const InvitesPage = () => {
             loading={sendingInvite}
             disabled={!inviteEmail.trim()}
             onClick={handleSendInvite}
-            style={{ backgroundColor: '#5CC49D', borderColor: '#5CC49D' }}
+           
             icon={<SendOutlined />}
           >
             Send Invitation
