@@ -6,7 +6,7 @@ import { AdminRateLimiters } from '@/lib/adminRateLimiters';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { inviteId: string } }
+  { params }: { params: Promise<{ inviteId: string }> }
 ) {
   try {
     const { user, admin, error } = await getAuthenticatedAdmin(request);
@@ -18,6 +18,9 @@ export async function POST(
       );
     }
 
+    // Await params
+    const { inviteId } = await params;
+
     // Rate limit
     const rateLimitResult = await AdminRateLimiters.sendInvite(user.id);
     if (!rateLimitResult.success) {
@@ -27,7 +30,7 @@ export async function POST(
       );
     }
 
-    const result = await adminInviteService.resendInvite(params.inviteId);
+    const result = await adminInviteService.resendInvite(inviteId);
     return NextResponse.json(result);
     
   } catch (error: any) {

@@ -4,9 +4,11 @@ import { adminInviteService } from '@/services/admin-invite.service';
 import { getAuthenticatedAdmin } from '../../auth-helper';
 import { AdminRateLimiters } from '@/lib/adminRateLimiters';
 
+
+// admin-app/app/api/admin/users/[userId]/route.ts
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const { user, admin, error } = await getAuthenticatedAdmin(request);
@@ -18,6 +20,9 @@ export async function PATCH(
       );
     }
 
+    // Await params
+    const { userId } = await params;
+
     // Rate limit
     const rateLimitResult = await AdminRateLimiters.userAction(user.id);
     if (!rateLimitResult.success) {
@@ -28,13 +33,13 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { action } = body; // 'suspend' or 'activate'
+    const { action } = body;
 
     let result;
     if (action === 'suspend') {
-      result = await adminInviteService.suspendUser(params.userId);
+      result = await adminInviteService.suspendUser(userId);
     } else if (action === 'activate') {
-      result = await adminInviteService.activateUser(params.userId);
+      result = await adminInviteService.activateUser(userId);
     } else {
       return NextResponse.json(
         { error: 'Invalid action' },
