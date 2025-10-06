@@ -5,12 +5,13 @@
   "engines": {
     "node": ">=20"
   },
-  "scripts": {
+ "scripts": {
     "dev": "cross-env NODE_OPTIONS=--max_old_space_size=4096 refine dev",
-    "build": "refine build",
+    "build": "prisma generate && refine build",
     "start": "refine start",
     "lint": "next lint",
-    "refine": "refine"
+    "refine": "refine",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
