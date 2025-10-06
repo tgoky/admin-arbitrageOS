@@ -1,4 +1,5 @@
 // components/menu/MenuIcon.tsx
+import React from 'react';
 import {
   Mail,
   Tag,
@@ -28,29 +29,9 @@ interface MenuIconProps {
 }
 
 export const MenuIcon = ({ name }: MenuIconProps) => {
-  const iconMap: Record<string, JSX.Element> = {
-    Dashboard: <BarChart2 className="h-4 w-4" />,
-    Cold_Email_Writer: <Mail className="h-4 w-4" />,
-    categories: <Tag className="h-4 w-4" />,
-    Niche_Researcher: <FolderSearch className="h-4 w-4" />,
-    Top_50_Niches: <ListOrdered className="h-4 w-4" />,
+  const iconMap: Record<string, React.ReactElement> = {
     Admin: <ClipboardList className="h-4 w-4" />,
     Invites: <Megaphone className="h-4 w-4" />,
-    Growth_Plan_Creator: <Presentation className="h-4 w-4" />,
-    Pricing_Calculator: <Calculator className="h-4 w-4" />,
-    Sales_Call_Analyzer: <PhoneCall className="h-4 w-4" />,
-      Client_Profiles:<User className="h-4 w-4" />,
-    Submissions: <FileText className="h-4 w-4" />,
-    AI_Tools: <Wand2 className="h-4 w-4" />,
-    Playbooks: <BookOpen className="h-4 w-4" />,
-    Lead_Generation: <Users className="h-4 w-4" />,
-    Agents_Flow: <Bot className="h-4 w-4" />,
-    Work_Flow: <GitBranch className="h-4 w-4" />,
-    Automations: <Workflow className="h-4 w-4" />,
-    N8n_Builder: <Workflow className="h-4 w-4" />,
-    N8n_Library: <Library className="h-4 w-4" />,
-    Prompt_Directory: <Notebook className="h-4 w-4" />,
-    Hiring_Portal: <PhoneCall className="h-4 w-4" />,
     default: (
       <svg
         className="h-4 w-4"

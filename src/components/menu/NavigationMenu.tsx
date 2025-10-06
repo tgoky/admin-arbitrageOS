@@ -23,7 +23,7 @@ export interface IMenuItem extends Omit<RefineMenuItem, 'route'> {
 export interface MenuGroupConfig {
   id: string;
   label: string;
-  icon: JSX.Element;
+  icon: React.ReactElement; 
   items?: string[];
   subGroups?: MenuGroupConfig[];
 }
