@@ -411,7 +411,7 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
           <Col xs={24} sm={8} md={6}>
             <Card size="small" className="text-center h-full">
               <Statistic
-                title="Pending Invites"
+                title="Sent Invites"
                 value={metrics.pendingInvites}
                 prefix={<MailOutlined />}
                 valueStyle={{ color: '#1890ff' }}
@@ -553,7 +553,7 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
               key="sentAt"
               render={(invite: Invite) => new Date(invite.sent_at).toLocaleString()}
             />
-            <Column 
+            {/* <Column 
               title="Accepted At" 
               key="acceptedAt"
               render={(invite: Invite) => 
@@ -561,7 +561,7 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
                   ? new Date(invite.accepted_at).toLocaleString()
                   : '-'
               }
-            />
+            /> */}
           </Table>
         </Card>
       </main>

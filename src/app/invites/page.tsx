@@ -317,7 +317,7 @@ const InvitesPage = () => {
               }
             />
             
-            <Column 
+            {/* <Column 
               title="Accepted At" 
               key="acceptedAt"
               render={(invite: Invite) => 
@@ -325,7 +325,7 @@ const InvitesPage = () => {
                   ? new Date(invite.accepted_at).toLocaleString()
                   : <Text type="secondary">-</Text>
               }
-            />
+            /> */}
 
             <Column 
               title="Invited By" 
