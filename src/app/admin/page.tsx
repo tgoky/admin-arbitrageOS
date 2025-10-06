@@ -479,7 +479,7 @@ const handleUserAction = async (user: User, action: 'view' | 'suspend' | 'resend
               render={(user: User) => 
                 user.last_login 
                   ? new Date(user.last_login).toLocaleDateString()
-                  : 'Never'
+                  : '—'
               }
             />
             <Column 
