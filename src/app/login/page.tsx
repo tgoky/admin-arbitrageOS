@@ -62,7 +62,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     <div 
       className="min-h-screen flex items-center justify-center"
       style={{ 
-        backgroundColor: token.colorBgContainer,
+        backgroundColor: 'black',
         backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(92, 196, 157, 0.05) 0%, transparent 50%)'
       }}
     >
