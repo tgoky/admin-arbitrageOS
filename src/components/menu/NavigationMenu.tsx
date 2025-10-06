@@ -1,8 +1,9 @@
+// admin-app/src/components/menu/NavigationMenu.tsx
 "use client";
 
+import React from "react";
 import { useTheme } from "../../providers/ThemeProvider";
 import { MenuGroup } from "./MenuGroup";
-import { IMenuItem as RefineMenuItem } from "@refinedev/core";
 import {
   ShieldCheckIcon,
   HomeIcon,
@@ -11,19 +12,21 @@ import {
 } from "@heroicons/react/24/outline";
 import { Workflow } from "lucide-react";
 
-// Custom IMenuItem to allow optional route
-export interface IMenuItem extends Omit<RefineMenuItem, 'route'> {
+// Define your own MenuItem interface instead of importing
+export interface IMenuItem {
   key: string;
   name: string;
   label?: string;
   route?: string;
+  icon?: React.ReactNode;
+  children?: IMenuItem[];
 }
 
 // Shared MenuGroupConfig interface
 export interface MenuGroupConfig {
   id: string;
   label: string;
-  icon: React.ReactElement; 
+  icon: React.ReactElement;
   items?: string[];
   subGroups?: MenuGroupConfig[];
 }
@@ -47,22 +50,19 @@ const menuGroups: MenuGroupConfig[] = [
         id: "compliance",
         label: "Users",
         icon: <ShieldCheckIcon className="h-4 w-4" />,
-        items: [ "admin", ],
-        //commented out client profile , hiring portal
+        items: ["admin"],
       },
       {
         id: "tools",
         label: "Tools",
         icon: <BoltIcon className="h-4 w-4" />,
-        items: [ ""],
-        //commented out lead gen and playbooks
+        items: [""],
       },
       {
         id: "agents",
         label: "Agents",
         icon: <CubeIcon className="h-4 w-4" />,
         items: [],
-        //commented out agent and workflow
       },
     ],
   },
@@ -70,26 +70,16 @@ const menuGroups: MenuGroupConfig[] = [
     id: "overview",
     label: "View Invites",
     icon: <HomeIcon className="h-4 w-4" />,
-    items: [
-    //    "Top_50_Niches",
-    //   "Niche_Research_Report",
-    //   "Offer_Creator",
-    //      "Pricing_Calculator",
-    //     "Ad_Writer",
-    //   "Cold_Email_Writer",
-    // "Sales_Call_Analyzer",
-
-      "invites",
-    ],
+    items: ["invites"],
   },
   {
     id: "automations",
     label: "Activities",
     icon: <Workflow className="h-4 w-4" />,
-    items: [ ""],
-    //commented out automations
+    items: [""],
   },
 ];
+
 
 export const NavigationMenu = ({
   isClient,
