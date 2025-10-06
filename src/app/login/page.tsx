@@ -16,47 +16,45 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { token } = useToken();
 
-// admin-app/app/login/page.tsx
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
-  setError('');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-  try {
-    const response = await fetch('/api/admin/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
+    try {
+      const response = await fetch('/api/admin/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (!response.ok) {
-      throw new Error(result.error || 'Login failed');
+      if (!response.ok) {
+        throw new Error(result.error || 'Login failed');
+      }
+
+      // Store in BOTH localStorage and cookie
+      const sessionData = JSON.stringify(result.session);
+      
+      // localStorage for client-side auth checks
+      localStorage.setItem('admin_session', sessionData);
+      
+      // Cookie for API route authentication
+      const expires = new Date();
+      expires.setDate(expires.getDate() + 7);
+      document.cookie = `admin_session=${encodeURIComponent(sessionData)}; path=/; expires=${expires.toUTCString()}`;
+      
+      console.log('Session stored:', localStorage.getItem('admin_session'));
+      
+      window.location.href = '/';
+      
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or not an admin');
+    } finally {
+      setLoading(false);
     }
-
-    // Store in BOTH localStorage and cookie
-    const sessionData = JSON.stringify(result.session);
-    
-    // localStorage for client-side auth checks
-    localStorage.setItem('admin_session', sessionData);
-    
-    // Cookie for API route authentication
-    const expires = new Date();
-    expires.setDate(expires.getDate() + 7);
-    document.cookie = `admin_session=${encodeURIComponent(sessionData)}; path=/; expires=${expires.toUTCString()}`;
-    
-    console.log('Session stored:', localStorage.getItem('admin_session'));
-    
-    window.location.href = '/';
-    
-  } catch (err: any) {
-    setError(err.message || 'Invalid email or not an admin');
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   return (
     <div 
@@ -84,7 +82,9 @@ const handleSubmit = async (e: React.FormEvent) => {
           className="w-full shadow-lg border-0"
           style={{
             borderRadius: '16px',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            border: '1px solid rgba(92, 196, 157, 0.2)'
           }}
         >
           <div className="text-center mb-8">
@@ -99,17 +99,17 @@ const handleSubmit = async (e: React.FormEvent) => {
                 <LockOutlined className="text-white text-xl" />
               </div>
             </div>
-            <Title level={3} className="mb-2" style={{ fontWeight: 600 }}>
+            <Title level={3} className="mb-2" style={{ fontWeight: 600, color: 'white' }}>
               Admin Login
             </Title>
-            <Text type="secondary" style={{ fontSize: '15px' }}>
+            <Text style={{ fontSize: '15px', color: 'rgba(255, 255, 255, 0.7)' }}>
               Enter your admin email to continue
             </Text>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Text strong className="text-sm" style={{ color: token.colorTextSecondary }}>
+              <Text strong className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
                 Admin Email
               </Text>
               <Input
@@ -118,14 +118,17 @@ const handleSubmit = async (e: React.FormEvent) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@example.com"
-                prefix={<MailOutlined style={{ color: token.colorTextTertiary }} />}
+                prefix={<MailOutlined style={{ color: 'rgba(255, 255, 255, 0.5)' }} />}
                 required
                 className="w-full"
                 style={{
-                  borderRadius: '8px',
-                  height: '48px',
-                  fontSize: '15px'
-                }}
+  borderRadius: '8px',
+  height: '48px',
+  fontSize: '15px',
+  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  borderColor: 'rgba(255, 255, 255, 0.2)',
+  color: 'white'
+}}
               />
             </div>
 
@@ -167,19 +170,19 @@ const handleSubmit = async (e: React.FormEvent) => {
           <div 
             className="mt-6 p-4 rounded-lg"
             style={{
-              background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(33, 150, 243, 0.02) 100%)',
-              border: '1px solid rgba(33, 150, 243, 0.15)'
+              background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(33, 150, 243, 0.05) 100%)',
+              border: '1px solid rgba(33, 150, 243, 0.3)'
             }}
           >
             <Space align="start">
               <TeamOutlined style={{ color: '#2196F3', marginTop: '2px' }} />
               <div>
-                <Text strong style={{ color: '#1976D2', fontSize: '13px' }}>
+                <Text strong style={{ color: '#4FC3F7', fontSize: '13px' }}>
                   Restricted Access
                 </Text>
                 <Text 
                   style={{ 
-                    color: '#424242', 
+                    color: 'rgba(255, 255, 255, 0.7)', 
                     fontSize: '12px',
                     display: 'block',
                     marginTop: '4px',
@@ -195,9 +198,9 @@ const handleSubmit = async (e: React.FormEvent) => {
         </Card>
 
         <div className="text-center mt-6">
-          <Text type="secondary" style={{ fontSize: '12px' }}>
+          <Text style={{ fontSize: '12px', color: 'white' }}>
             <span style={{ color: '#5CC49D', fontWeight: 600 }}>arbitrage</span>
-            <span style={{ color: token.colorTextTertiary }}>OS Admin Panel © 2025</span>
+            <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>OS Admin Panel © 2025</span>
           </Text>
         </div>
       </div>
