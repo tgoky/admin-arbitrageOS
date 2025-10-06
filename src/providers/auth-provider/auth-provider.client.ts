@@ -2,39 +2,32 @@
 "use client";
 
 import type { AuthProvider } from "@refinedev/core";
-import { supabaseBrowserClient as supabase } from "../../utils/supabase/client";
 
 export const adminAuthProviderClient: AuthProvider = {
   login: async ({ email }) => {
     try {
-      const trimmedEmail = email.trim().toLowerCase();
-
-      // Send magic link for admin login
-      const { error } = await supabase.auth.signInWithOtp({
-        email: trimmedEmail,
-        options: {
-          emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/admin`,
-          shouldCreateUser: false, // Don't auto-create users
-        },
+      const response = await fetch('/api/admin/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
       });
 
-      if (error) {
+      const result = await response.json();
+
+      if (!response.ok) {
         return {
           success: false,
           error: {
             name: "LoginError",
-            message: error.message || "Failed to send magic link",
+            message: result.error || "Login failed",
           },
         };
       }
 
-      return {
-        success: true,
-        successNotification: {
-          message: "Check your email!",
-          description: "We sent you a magic link to login as admin.",
-        },
-      };
+      // Store in localStorage
+      localStorage.setItem('admin_session', JSON.stringify(result.session));
+
+      return { success: true };
     } catch (error: any) {
       return {
         success: false,
@@ -47,99 +40,72 @@ export const adminAuthProviderClient: AuthProvider = {
   },
 
   logout: async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        return { 
-          success: false, 
-          error: {
-            name: "LogoutError",
-            message: error.message,
-          },
-        };
-      }
-      
-      return { 
-        success: true, 
-        redirectTo: "/login" 
-      };
-    } catch (error: any) {
-      return { 
-        success: false, 
-        error: {
-          name: "LogoutError",
-          message: error.message || "Logout failed",
-        },
-      };
-    }
+    localStorage.removeItem('admin_session');
+    return {
+      success: true,
+      redirectTo: "/login"
+    };
   },
 
-  check: async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user) {
-        return { 
-          authenticated: false, 
-          logout: true, 
-          redirectTo: "/login" 
-        };
-      }
+ // admin-app/src/providers/auth-provider/admin-auth-provider.client.ts
+check: async () => {
+  console.log('🔍 CHECK: Running auth check');
+  console.log('🔍 CHECK: typeof localStorage:', typeof localStorage);
+  console.log('🔍 CHECK: localStorage available:', typeof window !== 'undefined');
+  
+  const session = localStorage.getItem('admin_session');
+  console.log('🔍 CHECK: Session from localStorage:', session ? 'EXISTS' : 'NULL');
+  
+  if (!session) {
+    console.log('❌ CHECK: No session, will redirect to login');
+    return {
+      authenticated: false,
+      logout: true,
+      redirectTo: "/login"
+    };
+  }
 
-      // Check admin role via API (Prisma)
-      const response = await fetch('/api/admin/verify');
-      const { isAdmin } = await response.json();
-
-      if (!isAdmin) {
-        return { 
-          authenticated: false, 
-          logout: true, 
-          redirectTo: "/login",
-          error: {
-            message: "You don't have admin access",
-            name: "Unauthorized"
-          }
-        };
-      }
-      
-      return { authenticated: true };
-    } catch (error) {
-      return { 
-        authenticated: false, 
-        logout: true, 
-        redirectTo: "/login" 
-      };
-    }
-  },
+  try {
+    const parsed = JSON.parse(session);
+    console.log('✅ CHECK: Session valid:', parsed.email);
+    return { authenticated: true };
+  } catch (e) {
+    console.log('❌ CHECK: Session invalid, parsing failed');
+    localStorage.removeItem('admin_session');
+    return {
+      authenticated: false,
+      logout: true,
+      redirectTo: "/login"
+    };
+  }
+},
 
   getIdentity: async () => {
+    const session = localStorage.getItem('admin_session');
+    
+    if (!session) return null;
+
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Admin',
-          avatar: user.user_metadata?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`,
-        };
-      }
-      
-      return null;
-    } catch (error) {
+      const data = JSON.parse(session);
+      return {
+        id: data.id,
+        email: data.email,
+        name: data.email?.split('@')[0] || 'Admin',
+        avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${data.email}`,
+      };
+    } catch {
       return null;
     }
   },
 
   onError: async (error) => {
     if (error.status === 401) {
-      return { 
-        logout: true, 
-        redirectTo: "/login" 
+      return {
+        logout: true,
+        redirectTo: "/login"
       };
     }
-    
+
     return { error };
   },
 };

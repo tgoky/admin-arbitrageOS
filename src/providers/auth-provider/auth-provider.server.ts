@@ -1,30 +1,12 @@
+// admin-app/src/providers/auth-provider/auth-provider.server.ts
 import type { AuthProvider } from "@refinedev/core";
-import { createSupabaseServerClient } from "@utils/supabase/server";
 
 export const authProviderServer: Pick<AuthProvider, "check"> = {
   check: async () => {
-    const client = await createSupabaseServerClient();
-    const { data, error } = await client.auth.getUser();
-    const { user } = data;
-
-    if (error) {
-      return {
-        authenticated: false,
-        logout: true,
-        redirectTo: "/login",
-      };
-    }
-
-    if (user) {
-      return {
-        authenticated: true,
-      };
-    }
-
+    // Since we're using localStorage client-side, 
+    // server-side checks should just pass through
     return {
-      authenticated: false,
-      logout: true,
-      redirectTo: "/login",
+      authenticated: true,
     };
   },
 };
