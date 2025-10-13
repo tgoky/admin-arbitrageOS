@@ -88,10 +88,23 @@ const AdminDashboard = () => {
 const loadData = async () => {
   try {
     const [usersRes, invitesRes, statsRes] = await Promise.all([
-      fetch('/api/admin/users'),
-      fetch('/api/admin/invites'),
-      fetch('/api/admin/statistics'),
+      fetch('/api/admin/users', { credentials: 'include' }),
+      fetch('/api/admin/invites', { credentials: 'include' }),
+      fetch('/api/admin/statistics', { credentials: 'include' }),
     ]);
+
+    // Check for 401 (unauthorized) - session expired
+    if (usersRes.status === 401 || invitesRes.status === 401 || statsRes.status === 401) {
+      message.error('Session expired. Please login again.');
+      
+      // Clear local session
+      localStorage.removeItem('admin_session');
+      document.cookie = 'admin_session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+      
+      // Redirect to login
+      router.push('/login');
+      return;
+    }
 
     if (!usersRes.ok || !invitesRes.ok || !statsRes.ok) {
       message.error('Failed to load data. Please try again.');
@@ -117,10 +130,15 @@ const loadData = async () => {
     }
   } catch (error) {
     console.error('Load data error:', error);
-    message.error('Failed to load data');
+    
+    // Check if it's a network error or auth error
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      message.error('Network error. Please check your connection.');
+    } else {
+      message.error('Failed to load data. Please refresh the page.');
+    }
   }
 };
-
 
 
   // Filter users based on search
