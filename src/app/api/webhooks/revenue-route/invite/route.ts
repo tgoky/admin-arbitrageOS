@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     // 5. Send the invite
     const result = await adminInviteService.sendInvite({
       email: email.trim().toLowerCase(),
-      invitedBy: 'RevenueRoute Automation', // Track that this came from automation
+      invitedBy: 'Grow AI', // Track that this came from automation
     });
 
     // 6. Handle success/failure
