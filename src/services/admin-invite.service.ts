@@ -19,10 +19,18 @@ export interface UserWithStats {
   created_at: Date;
 }
 
-// Create a server-side Supabase client for sending emails
+// Create a server-side Supabase client with SERVICE ROLE KEY for admin operations
+// IMPORTANT: SERVICE_ROLE_KEY is required for admin.inviteUserByEmail
+// Never expose this key to the client - it bypasses Row Level Security
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
 );
 
 
@@ -78,19 +86,20 @@ export const adminInviteService = {
         },
       });
 
-      // Send magic link to MAIN APP
+      // Send proper admin invite to MAIN APP
+      // Using auth.admin.inviteUserByEmail creates user in "invited" state
+      // User MUST click the link to complete signup - no partial auth states
       const mainAppUrl = process.env.NEXT_PUBLIC_MAIN_APP_URL || 'http://localhost:3000';
-      const { error: authError } = await supabaseAdmin.auth.signInWithOtp({
-        email: trimmedEmail,
-        options: {
-          emailRedirectTo: `${mainAppUrl}/api/auth/callback?next=/&invite_id=${invite.id}`,
-          shouldCreateUser: true,
+      const { error: authError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
+        trimmedEmail,
+        {
+          redirectTo: `${mainAppUrl}/api/auth/callback?invite_id=${invite.id}`,
           data: {
             invited_by: invitedBy,
             invite_id: invite.id,
           },
-        },
-      });
+        }
+      );
 
       if (authError) {
         return {
@@ -184,15 +193,14 @@ getUsers: async (): Promise<{ success: boolean; data: UserWithStats[]; error?: s
         },
       });
 
-      // Resend magic link to MAIN APP
+      // Resend proper admin invite to MAIN APP
       const mainAppUrl = process.env.NEXT_PUBLIC_MAIN_APP_URL || 'http://localhost:3000';
-      const { error: authError } = await supabaseAdmin.auth.signInWithOtp({
-        email: invite.email,
-        options: {
-          emailRedirectTo: `${mainAppUrl}/api/auth/callback?next=/&invite_id=${invite.id}`,
-          shouldCreateUser: true,
-        },
-      });
+      const { error: authError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
+        invite.email,
+        {
+          redirectTo: `${mainAppUrl}/api/auth/callback?invite_id=${invite.id}`,
+        }
+      );
 
       if (authError) {
         return { success: false, error: authError.message };
