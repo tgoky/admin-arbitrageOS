@@ -20,9 +20,16 @@ export interface UserWithStats {
 }
 
 // Create a server-side Supabase client for sending emails
+// Service role key requires specific auth options to work properly on server-side
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
 );
 
 export const adminInviteService = {
