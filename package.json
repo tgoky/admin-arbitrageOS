@@ -5,7 +5,7 @@
   "engines": {
     "node": ">=20"
   },
- "scripts": {
+  "scripts": {
     "dev": "cross-env NODE_OPTIONS=--max_old_space_size=4096 refine dev",
     "build": "prisma generate && refine build",
     "start": "refine start",
@@ -33,7 +33,7 @@
     "dotenv": "^17.2.3",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.544.0",
-    "next": "^15.2.4",
+    "next": "15.2.8",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
