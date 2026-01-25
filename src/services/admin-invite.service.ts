@@ -20,20 +20,16 @@ export interface UserWithStats {
 }
 
 // Create a server-side Supabase client for sending emails
-// Service role key requires specific auth options to work properly on server-side
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  }
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
+
+
 
 export const adminInviteService = {
   // Send invite to new user
+   // Send invite to new user
   sendInvite: async ({ email, invitedBy }: InviteUserParams) => {
     try {
       const trimmedEmail = email.trim().toLowerCase();
@@ -82,14 +78,19 @@ export const adminInviteService = {
         },
       });
 
-      // Send invite using proper admin invite method
+      // Send magic link to MAIN APP
       const mainAppUrl = process.env.NEXT_PUBLIC_MAIN_APP_URL || 'http://localhost:3000';
-      const { error: authError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
-        trimmedEmail,
-        {
-          redirectTo: `${mainAppUrl}/api/auth/callback?invite_id=${invite.id}`,
-        }
-      );
+      const { error: authError } = await supabaseAdmin.auth.signInWithOtp({
+        email: trimmedEmail,
+        options: {
+          emailRedirectTo: `${mainAppUrl}/api/auth/callback?next=/&invite_id=${invite.id}`,
+          shouldCreateUser: true,
+          data: {
+            invited_by: invitedBy,
+            invite_id: invite.id,
+          },
+        },
+      });
 
       if (authError) {
         return {
@@ -111,6 +112,7 @@ export const adminInviteService = {
     }
   },
 
+
   // Get all invites
   getInvites: async () => {
     try {
@@ -126,19 +128,20 @@ export const adminInviteService = {
   },
 
   // Get all users with statistics
-  getUsers: async (): Promise<{ success: boolean; data: UserWithStats[]; error?: string }> => {
-    try {
-      const users = await prisma.user.findMany({
-        include: {
-          workspaces: {
-            select: { id: true },
-          },
-          deliverables: {
-            select: { id: true },
-          },
+getUsers: async (): Promise<{ success: boolean; data: UserWithStats[]; error?: string }> => {
+  try {
+    const users = await prisma.user.findMany({
+      include: {
+        workspaces: {
+          select: { id: true },
         },
-        orderBy: { created_at: 'desc' },
-      });
+        deliverables: {
+          select: { id: true },
+        },
+      },
+      orderBy: { created_at: 'desc' },
+    });
+    
 
       const usersWithStats: UserWithStats[] = users.map(user => ({
         id: user.id,
@@ -160,7 +163,7 @@ export const adminInviteService = {
   },
 
   // Resend invite
-  resendInvite: async (inviteId: string) => {
+   resendInvite: async (inviteId: string) => {
     try {
       const invite = await prisma.userInvite.findUnique({
         where: { id: inviteId },
@@ -181,14 +184,15 @@ export const adminInviteService = {
         },
       });
 
-      // Resend invite using proper admin invite method
+      // Resend magic link to MAIN APP
       const mainAppUrl = process.env.NEXT_PUBLIC_MAIN_APP_URL || 'http://localhost:3000';
-      const { error: authError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
-        invite.email,
-        {
-          redirectTo: `${mainAppUrl}/api/auth/callback?invite_id=${invite.id}`,
-        }
-      );
+      const { error: authError } = await supabaseAdmin.auth.signInWithOtp({
+        email: invite.email,
+        options: {
+          emailRedirectTo: `${mainAppUrl}/api/auth/callback?next=/&invite_id=${invite.id}`,
+          shouldCreateUser: true,
+        },
+      });
 
       if (authError) {
         return { success: false, error: authError.message };
