@@ -20,9 +20,16 @@ export interface UserWithStats {
 }
 
 // Create a server-side Supabase client for sending emails
+// IMPORTANT: Must use service role key for server-side auth operations like signInWithOtp
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
 );
 
 
@@ -31,8 +38,10 @@ export const adminInviteService = {
   // Send invite to new user
    // Send invite to new user
   sendInvite: async ({ email, invitedBy }: InviteUserParams) => {
+    console.log('📧 Starting invite process for:', email);
     try {
       const trimmedEmail = email.trim().toLowerCase();
+      console.log('📧 Trimmed email:', trimmedEmail);
 
       // Check for existing invite
       const existingInvite = await prisma.userInvite.findUnique({
@@ -77,13 +86,18 @@ export const adminInviteService = {
           expires_at: expiresAt,
         },
       });
+      console.log('✅ Invite record created/updated:', invite.id);
 
       // Send magic link to MAIN APP
       const mainAppUrl = process.env.NEXT_PUBLIC_MAIN_APP_URL || 'http://localhost:3000';
+      const redirectUrl = `${mainAppUrl}/api/auth/callback?next=/&invite_id=${invite.id}`;
+      console.log('📤 Sending OTP email via Supabase to:', trimmedEmail);
+      console.log('📤 Redirect URL:', redirectUrl);
+
       const { error: authError } = await supabaseAdmin.auth.signInWithOtp({
         email: trimmedEmail,
         options: {
-          emailRedirectTo: `${mainAppUrl}/api/auth/callback?next=/&invite_id=${invite.id}`,
+          emailRedirectTo: redirectUrl,
           shouldCreateUser: true,
           data: {
             invited_by: invitedBy,
@@ -93,12 +107,14 @@ export const adminInviteService = {
       });
 
       if (authError) {
+        console.error('❌ Supabase OTP error:', authError.message);
         return {
           success: false,
           error: authError.message,
         };
       }
 
+      console.log('✅ Invite email sent successfully to:', trimmedEmail);
       return {
         success: true,
         inviteId: invite.id,
